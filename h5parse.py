@@ -40,6 +40,7 @@ class H5Instance:
         return fields
 
     def preview_field(self, field: str) -> dict:
+        numpy.set_printoptions(threshold=10, linewidth=sys.maxsize)
         obj = self.instance[field]
         if isinstance(obj, h5py.Group):
             # Return fields in group
@@ -55,6 +56,7 @@ class H5Instance:
             }
 
     def read_field(self, field: str) -> dict:
+        numpy.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize)
         data = self.instance[field][()]
         return {
             "name": field,

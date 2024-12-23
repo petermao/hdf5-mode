@@ -59,7 +59,7 @@
 (defun hdf5-get-field-at-cursor ()
   "Return field at current cursor position"
   (goto-char (line-beginning-position))
-  (setq field (thing-at-point 'word t))
+  (setq field (thing-at-point 'filename t))
   (hdf5-fix-path (concat hdf5-mode-root "/" field)))
 
 (defun hdf5-is-group (field)
@@ -106,7 +106,7 @@
     (insert (format "%s %s\n\n"
                     (propertize "Root:" 'face 'bold)
                     hdf5-mode-root))
-    (setq template "%-15s %-15s %-15s\n")
+    (setq template "%-30s %-15s %-15s\n")
     (insert (propertize (format template "*name*" "*dims*" "*type*")
                         'face '('bold 'underline)))
     (maphash (lambda (key val)
@@ -162,6 +162,7 @@
       (with-current-buffer (get-buffer-create "*HDF5 Dataset*")
         (let ((inhibit-read-only t))
           (erase-buffer)
+          (setq truncate-lines t)
           (insert (propertize (format "%s:\n" field) 'face 'bold))
           (insert (format "%s\n" data))
           (special-mode)

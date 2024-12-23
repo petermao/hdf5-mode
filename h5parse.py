@@ -16,7 +16,7 @@ def meta_dict(name: str, obj) -> dict:
     elif isinstance(obj, h5py.Dataset):
         shape = "scalar"
         if len(obj.shape) > 0:
-            shape = [int(x) for x in obj.shape]
+            shape = str(obj.shape)
         return {
             'type': 'dataset',
             'name': name,
@@ -40,28 +40,27 @@ class H5Instance:
         return fields
 
     def preview_field(self, field: str) -> dict:
-        numpy.set_printoptions(threshold=10, linewidth=sys.maxsize)
         obj = self.instance[field]
+        meta = meta_dict(field, obj)
+        numpy.set_printoptions(threshold=10, linewidth=sys.maxsize)
         if isinstance(obj, h5py.Group):
             # Return fields in group
-            return {
-                "name": field,
-                "data": str(list(obj.keys()))
-            }
+            meta['data'] = str(list(obj.keys()))
         else:
             # Return data in field
-            return {
-                "name": field,
-                "data": str(self.instance[field][()])
-            }
+            meta['data'] = str(obj[()])
+        return meta
 
     def read_field(self, field: str) -> dict:
-        numpy.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize)
-        data = self.instance[field][()]
-        return {
-            "name": field,
-            "data": str(data)
-        }
+        obj = self.instance[field]
+        meta = meta_dict(field, obj)
+        linewidth = sys.maxsize
+        if len(obj.shape) == 1:
+            # Print 1d arrays vertically
+            linewidth = 1
+        numpy.set_printoptions(threshold=sys.maxsize, linewidth=linewidth)
+        meta['data'] = str(obj[()])
+        return meta
 
     def is_group(self, field: str) -> dict:
         try:

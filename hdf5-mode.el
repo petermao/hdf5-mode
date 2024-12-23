@@ -116,7 +116,7 @@
                                    (format "%s/" key)
                                    "N/A" "group"))
                  (progn
-                   (setq shape (gethash "shape" val))
+                   (setq shape (propertize (gethash "shape" val) 'face 'italic))
                    (setq dtype (gethash "dtype" val))
                    (insert (format template
                                    key shape dtype)))))
@@ -138,8 +138,10 @@
   (interactive "sEnter path: ")
   (setq field (hdf5-fix-path field))
   (setq output (hdf5-parser-cmd "--preview-field" field hdf5-mode-file))
-  (message (format "%s\n%s"
-                   (propertize (format "%s:" field) 'face 'bold)
+  (message (format "%s %s %s:\n%s"
+                   (propertize field 'face 'bold)
+                   (propertize (gethash "shape" output) 'face 'italic)
+                   (gethash "dtype" output)
                    (gethash "data" output))))
 
 (defun hdf5-read-field-at-cursor ()
@@ -159,17 +161,19 @@
     (progn
       (setq output (hdf5-parser-cmd "--read-field" field hdf5-mode-file))
       (setq data (gethash "data" output))
-      (with-current-buffer (get-buffer-create "*HDF5 Dataset*")
+      (setq parent-buf (current-buffer))
+      (with-current-buffer (get-buffer-create (format "*%s%s*" parent-buf field))
         (let ((inhibit-read-only t))
           (erase-buffer)
           (setq truncate-lines t)
-          (insert (propertize (format "%s:\n" field) 'face 'bold))
-          (insert (format "%s\n" data))
+          (insert (format "%s %s %s:\n%s\n"
+                          (propertize field 'face 'bold)
+                          (propertize (gethash "shape" output) 'face 'italic)
+                          (gethash "dtype" output)
+                          (gethash "data" output)))
+          (goto-char (point-min))
           (special-mode)
-          (display-buffer (current-buffer)
-                          '((display-buffer-reuse-window
-                             display-buffer-pop-up-window)
-                            (reusable-frames . visible))))))))
+          (display-buffer (current-buffer) '((display-buffer-same-window))))))))
 
 (define-derived-mode hdf5-mode special-mode "HDF5"
   "Major mode for viewing HDF5 files"

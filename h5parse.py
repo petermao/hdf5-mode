@@ -71,12 +71,18 @@ class H5Instance:
         except:
             return {"return": False}
 
+    def get_attrs(self, root: str) -> dict:
+        obj = self.instance[root]
+        return {x[0]:str(x[1]) for x in obj.attrs.items()}
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', type=str,
                         help='File to parse')
     parser.add_argument('--get-fields', type=str,
                         help='Print fields within group')
+    parser.add_argument('--get-attrs', type=str,
+                        help='Print attributes of parent to root')
     parser.add_argument('--preview-field', type=str,
                         help='Print preview of requested field')
     parser.add_argument('--read-field', type=str,
@@ -98,4 +104,7 @@ if __name__ == "__main__":
         exit(0)
     if args.is_group:
         print(json.dumps(inst.is_group(args.is_group)))
+        exit(0)
+    if args.get_attrs:
+        print(json.dumps(inst.get_attrs(args.get_attrs)))
         exit(0)

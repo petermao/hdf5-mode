@@ -31,10 +31,16 @@
 (defvar hdf5-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") 'hdf5-read-field-at-cursor)
+    (define-key map (kbd "SPC") 'hdf5-read-field-at-cursor)
     (define-key map (kbd "/")   'hdf5-read-field)
     (define-key map (kbd "TAB") 'hdf5-preview-field-at-cursor)
     (define-key map (kbd "'")   'hdf5-preview-field)
     (define-key map (kbd "b")   'hdf5-back)
+    (define-key map (kbd "DEL") 'hdf5-back)
+    (define-key map (kbd "S-SPC") 'hdf5-back)
+    (define-key map (kbd "n")   'forward-line)
+    (define-key map (kbd "p")   'previous-line)
+    (define-key map (kbd "w")   'hdf5-copy-field-at-cursor)
     map)
   "Keymap for HDF5 mode")
 
@@ -174,6 +180,13 @@
           (goto-char (point-min))
           (special-mode)
           (display-buffer (current-buffer) '((display-buffer-same-window))))))))
+
+(defun hdf5-copy-field-at-cursor ()
+  "Interactively put field-at-cursor into the kill ring"
+  (interactive)
+  (let ((field-name (hdf5-get-field-at-cursor)))
+    (kill-new field-name)
+    (message (format "Copied HD5 field: %s" field-name))))
 
 (define-derived-mode hdf5-mode special-mode "HDF5"
   "Major mode for viewing HDF5 files"

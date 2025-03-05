@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import h5py
-import numpy
+import numpy as np
 import json
 import sys
 import argparse
@@ -17,10 +17,20 @@ def meta_dict(name: str, obj) -> dict:
         shape = "scalar"
         if len(obj.shape) > 0:
             shape = str(obj.shape)
+        try: # calculate the data range
+            datamin = np.nanmin(obj[:].reshape(-1))
+            datamax = np.nanmax(obj[:].reshape(-1))
+            if datamin == datamax:
+                datarange = f'{datamin:.4g}'
+            else:
+                datarange = f'{datamin:.3g}:{datamax:.3g}'
+        except: # take the 1st value if it's something weird
+            datarange = str(obj[:][0])
         return {
             'type': 'dataset',
             'name': name,
             'shape': shape,
+            'range': datarange,
             'dtype': str(obj.dtype)
         }
     else:
@@ -42,7 +52,7 @@ class H5Instance:
     def preview_field(self, field: str) -> dict:
         obj = self.instance[field]
         meta = meta_dict(field, obj)
-        numpy.set_printoptions(threshold=10, linewidth=sys.maxsize)
+        np.set_printoptions(threshold=10, linewidth=sys.maxsize)
         if isinstance(obj, h5py.Group):
             # Return fields in group
             meta['data'] = str(list(obj.keys()))
@@ -58,7 +68,7 @@ class H5Instance:
         if len(obj.shape) == 1:
             # Print 1d arrays vertically
             linewidth = 1
-        numpy.set_printoptions(threshold=sys.maxsize, linewidth=linewidth)
+        np.set_printoptions(threshold=sys.maxsize, linewidth=linewidth)
         meta['data'] = str(obj[()])
         return meta
 
